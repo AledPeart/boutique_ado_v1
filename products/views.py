@@ -11,10 +11,25 @@ def all_products(request):
     products = Product.objects.all()
     query = None #this is to ensure that error not thrown if search query=blank
     categories = None
+    sort = None
+    direction = None
 
     if request.GET: #GET method passed in to the url
 
         #NB __ syntax allows us to look for the 'name' field in the category model
+        if 'sort' in request.GET:
+            sortkey = request.GET['sort']
+            sort = sortkey
+            if sortkey == 'name':
+                sortkey = 'lower_name'
+                products = products.annotate(lower_name=Lower('name'))
+
+            if 'direction' in request.GET:
+                direction = request.GET['direction']
+                if direction == 'desc':
+                    sortkey = f'-{sortkey}' #reverses the sort direction
+            products = products.order_by(sortkey)
+
 
         if 'category' in request.GET: 
             categories = request.GET['category'].split(',') #splits the categories into a list at the commas
@@ -31,11 +46,14 @@ def all_products(request):
             #Q object where name OR description is in the query (|=or, i=case insensitive)
             products = products.filter(queries) #filter method to filter the queries
 
+    current_sorting = f'{sort}_{direction}'
+
            
     context = {
         'products': products,
         'search_term': query,
         'current_categories': categories,
+        'current_sorting' : current_sorting,
     }
 
     return render(request, 'products/products.html', context)
