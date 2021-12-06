@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.db.models import Q #allows us to serch with 'or' logic as well as 'and'
 from .models import Product, Category
 from django.db.models.functions import Lower
+from .forms import ProductForm
 
 # Create your views here.
 
@@ -71,3 +72,14 @@ def product_detail(request, product_id):
     }
 
     return render(request, 'products/product_detail.html', context)
+
+
+def add_product(request):
+    """ Add a product to the store """
+    form = ProductForm()
+    template = 'products/add_product.html'
+    context = {
+        'form': form,
+    }
+
+    return render(request, template, context)
